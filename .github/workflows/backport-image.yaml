@@ -54,9 +54,9 @@ jobs:
           owner=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           echo "image_name=ghcr.io/${owner}/milvus" >> "$GITHUB_OUTPUT"
 
-      - name: Build milvus binary
+      - name: Build milvus artifacts
         shell: bash
-        run: bash ./build/builder.sh make milvus
+        run: bash ./build/builder.sh make install
 
       - name: Upload milvus binary
         uses: actions/upload-artifact@v4
@@ -75,11 +75,10 @@ jobs:
 
       - name: Build runtime image
         shell: bash
-        run: |
-          docker build \
-            -f Dockerfile.backport-2.6.13 \
-            -t "${{ steps.prep.outputs.image_name }}:${{ inputs.image_tag }}" \
-            .
+        env:
+          MILVUS_IMAGE_REPO: ${{ steps.prep.outputs.image_name }}
+          MILVUS_IMAGE_TAG: ${{ inputs.image_tag }}
+        run: bash ./build/build_image.sh
 
       - name: Push runtime image
         if: ${{ inputs.push_to_ghcr }}
