@@ -23,8 +23,17 @@ jobs:
     timeout-minutes: 240
 
     steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 20480
+          swap-size-mb: 1024
+          remove-dotnet: "true"
+          remove-android: "true"
+          remove-haskell: "true"
+
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -40,21 +49,21 @@ jobs:
           find build/docker -type f \( -name 'Dockerfile' -o -name 'Dockerfile.*' \) -print0 | xargs -0 sed -i 's/\r$//'
           chmod +x build/docker/builder/entrypoint.sh
 
-      - name: Maximize build space
-        uses: easimon/maximize-build-space@master
-        with:
-          root-reserve-mb: 20480
-          swap-size-mb: 1024
-          remove-dotnet: "true"
-          remove-android: "true"
-          remove-haskell: "true"
-
       - name: Prepare image name
         id: prep
         shell: bash
         run: |
           owner=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           echo "image_name=ghcr.io/${owner}/milvus" >> "$GITHUB_OUTPUT"
+
+      - name: Verify workspace
+        shell: bash
+        run: |
+          pwd
+          ls -la
+          ls -la build
+          test -f ./build/builder.sh
+          test -f ./build/build_image.sh
 
       - name: Build milvus artifacts
         shell: bash
