@@ -1,4 +1,4 @@
-name: Build 2.6.13 Backport Image
+name: Backport Image
 
 on:
   workflow_dispatch:
