@@ -26,16 +26,32 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 20480
+          root-reserve-mb: 2048
+          temp-reserve-mb: 100
           swap-size-mb: 1024
           remove-dotnet: "true"
           remove-android: "true"
           remove-haskell: "true"
+          remove-codeql: "true"
+          remove-docker-images: "true"
 
       - name: Checkout code
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
+
+      - name: Relocate Docker data root
+        shell: bash
+        run: |
+          sudo mkdir -p "${GITHUB_WORKSPACE}/.docker-data"
+          cat <<EOF | sudo tee /etc/docker/daemon.json
+          {
+            "data-root": "${GITHUB_WORKSPACE}/.docker-data"
+          }
+          EOF
+          sudo systemctl restart docker
+          docker info | grep "Docker Root Dir"
+          df -h
 
       - name: Prepare shell scripts
         shell: bash
@@ -64,6 +80,8 @@ jobs:
           ls -la build
           test -f ./build/builder.sh
           test -f ./build/build_image.sh
+          docker info | grep "Docker Root Dir"
+          df -h
 
       - name: Build milvus artifacts
         shell: bash
