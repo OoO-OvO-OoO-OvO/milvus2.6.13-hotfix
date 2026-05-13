@@ -1,0 +1,4 @@
+ARG BASE_IMAGE=milvusdb/milvus:v2.6.13
+FROM ${BASE_IMAGE}
+
+COPY --chmod=755 bin/milvus /milvus/bin/milvus
