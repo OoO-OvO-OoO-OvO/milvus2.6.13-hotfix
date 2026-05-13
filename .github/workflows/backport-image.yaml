@@ -28,6 +28,16 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Prepare shell scripts
+        shell: bash
+        run: |
+          pwd
+          ls -la
+          ls -la build
+          find build scripts -type f \( -name '*.sh' -o -name 'builder.sh' \) -print0 | xargs -0 sed -i 's/\r$//'
+          find build scripts -type f \( -name '*.sh' -o -name 'builder.sh' \) -print0 | xargs -0 chmod +x
+          chmod +x build/docker/builder/entrypoint.sh
+
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
@@ -45,7 +55,8 @@ jobs:
           echo "image_name=ghcr.io/${owner}/milvus" >> "$GITHUB_OUTPUT"
 
       - name: Build milvus binary
-        run: ./build/builder.sh make milvus
+        shell: bash
+        run: bash ./build/builder.sh make milvus
 
       - name: Upload milvus binary
         uses: actions/upload-artifact@v4
