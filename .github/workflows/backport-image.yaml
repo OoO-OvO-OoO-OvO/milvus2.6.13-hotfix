@@ -34,8 +34,10 @@ jobs:
           pwd
           ls -la
           ls -la build
+          sed -i 's/\r$//' Makefile .env docker-compose.yml
           find build scripts -type f \( -name '*.sh' -o -name 'builder.sh' \) -print0 | xargs -0 sed -i 's/\r$//'
           find build scripts -type f \( -name '*.sh' -o -name 'builder.sh' \) -print0 | xargs -0 chmod +x
+          find build/docker -type f \( -name 'Dockerfile' -o -name 'Dockerfile.*' \) -print0 | xargs -0 sed -i 's/\r$//'
           chmod +x build/docker/builder/entrypoint.sh
 
       - name: Maximize build space
@@ -56,7 +58,7 @@ jobs:
 
       - name: Build milvus artifacts
         shell: bash
-        run: bash ./build/builder.sh make install
+        run: bash ./build/builder.sh /bin/bash -lc "make install"
 
       - name: Upload milvus binary
         uses: actions/upload-artifact@v4
